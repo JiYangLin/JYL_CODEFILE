@@ -1,0 +1,18 @@
+#include "DXButton.h"
+将按钮变量绑定的类型改变
+CDXButton	m_btnskin;
+
+cpp定义宏 Dx_Button
+
+在OnInitDialog时可以设置
+
+CString str1 = _T(".\\skin\\1.jpg");
+CString str2 = _T(".\\skin\\2.jpg");
+CString str3 = _T(".\\skin\\3.jpg");//在当前目录下的skin文件夹下取图片//在当前目录下的skin文件夹下取图片
+m_btnskin.SetSkin((str1.AllocSysString()),(str2.AllocSysString()),(str3.AllocSysString()),NULL,NULL);//按下时显示2.jpg
+
+
+
+unicode工程
+如果按钮出现问题，则ctl+d设置一个按钮放在第一个
+初始化时可能会出现不能进行enabled操作，否则png显示问题

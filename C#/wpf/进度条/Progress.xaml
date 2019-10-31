@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="MyProgress.Progress"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Background="Transparent"  Opacity="1" >
+    <UserControl.Resources>
+        <LinearGradientBrush x:Key="g1" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="LightBlue" Offset="0"/>
+            <GradientStop Color="Green" Offset="0.5"/>
+            <GradientStop Color="LightBlue" Offset="1"/>
+        </LinearGradientBrush>
+        <Style
+     TargetType="{x:Type ProgressBar}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ProgressBar}">
+                        <Grid MinHeight="14" MinWidth="200">
+                            <Border 
+            Name="PART_Track" 
+            CornerRadius="20"
+            BorderBrush="Black"
+            BorderThickness="1" Background="#FF57C7C9" />
+                            <Border 
+           x:Name="PART_Indicator" 
+           CornerRadius="16" 
+           BorderBrush="Red" 
+           BorderThickness="1" 
+           HorizontalAlignment="Left" >
+                                <Border.Background>
+                                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                        <GradientStop Color="LightBlue" Offset="0"/>
+                                        <GradientStop Color="Green" Offset="0.5"/>
+                                        <GradientStop Color="LightBlue" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" x:Name="progressBar" OverridesDefaultStyle="True" RenderTransformOrigin="0.5,0.5" Value="55">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+            <ProgressBar.Foreground>
+                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                    <GradientStop Color="#FF24EE27" Offset="0"/>
+                    <GradientStop Color="#FF5434AC" Offset="0.5"/>
+                    <GradientStop Color="#FFB371EA" Offset="1"/>
+                </LinearGradientBrush>
+            </ProgressBar.Foreground>
+        </ProgressBar>
+
+        <TextBlock Name="TB_Tips" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="正在处理,请耐心等待..." FontSize="30" />
+        <TextBlock Name="TB_Percentage" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="已完成：0%" FontSize="30" />
+    </Grid>
+</UserControl>

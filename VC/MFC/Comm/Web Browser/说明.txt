@@ -1,0 +1,9 @@
+使用Microsoft Web Browser控件
+绑定变量m_explorer
+
+位置调节
+m_explorer.put_Width(1000);
+m_explorer.put_Height(500);
+
+输入地址
+m_explorer.Navigate("d:\\",NULL,NULL,NULL,NULL);

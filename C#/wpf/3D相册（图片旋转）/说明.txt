@@ -1,0 +1,2 @@
+FlipTile3D.cs文件中控制图像宽高，显示数量
+Picture文件夹下放图像

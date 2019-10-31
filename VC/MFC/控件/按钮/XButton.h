@@ -1,0 +1,7 @@
+#pragma once
+#include <GdiPlus.h>
+#pragma comment(lib,"gdiplus.lib")
+#define  InitGDI  Gdiplus::GdiplusStartupInput gdiplusStartupInput; ULONG_PTR  pGdiToken; Gdiplus::GdiplusStartup(&pGdiToken,&gdiplusStartupInput,NULL);
+class XButton : public CButton{public:XButton():m_pImgNormal(NULL),m_pImgMove(NULL),m_clicked(false){}void Init(CString strNormal, CString strMove){CStringW Normal(strNormal);m_pImgNormal = Gdiplus::Image::FromFile(Normal);CStringW strmove(strMove);m_pImgMove = Gdiplus::Image::FromFile(strmove);}private:Gdiplus::Image *m_pImgNormal;Gdiplus::Image *m_pImgMove;bool m_clicked;DECLARE_DYNAMIC(XButton)DECLARE_MESSAGE_MAP()afx_msg void OnPaint(){CPaintDC dc(this);CPoint pt;GetCursorPos(&pt);ScreenToClient(&pt);CRect rect;GetClientRect(rect);if(PtInRect(rect,pt) && !m_clicked)Draw(dc,m_pImgMove,rect);else Draw(dc,m_pImgNormal,rect);}void Draw(CDC &dc,Gdiplus::Image *m_pImg,CRect &rectCtrl){if (NULL == m_pImg) return;Gdiplus::Graphics graphics(dc.m_hDC); graphics.DrawImage(m_pImg,0,0,rectCtrl.Width(),rectCtrl.Height());}void OnLButtonUp(UINT nFlags, CPoint point){m_clicked = false;CButton::OnLButtonUp(nFlags, point);}void OnLButtonDown(UINT nFlags, CPoint point){m_clicked = true;CButton::OnLButtonDown(nFlags, point);}};
+#define  XBUTTON_IMPLEMENT   IMPLEMENT_DYNAMIC(XButton, CButton)BEGIN_MESSAGE_MAP(XButton, CButton)ON_WM_LBUTTONDOWN()ON_WM_LBUTTONUP()ON_WM_PAINT()END_MESSAGE_MAP()
+//µ¯¿òºó m_btn.SetFocus();

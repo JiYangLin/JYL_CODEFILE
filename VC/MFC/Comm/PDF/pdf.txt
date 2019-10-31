@@ -1,0 +1,55 @@
+=================Adobe PDF Reader=============
+需要安装AdbeReader
+该控件使用高版本编译器编的，所以在VC6下无法编辑
+=====打开
+m_pdf.LoadFile(_T("d:\\test.pdf"));
+=====设置显示位置
+m_pdf.SetWindowPos(NULL, x, y,cx,cy, SWP_NOACTIVATE | SWP_NOZORDER); 
+//如果不设置显示位置，可能会读取后需要点击一下才能显示
+=====隐藏滚动条
+m_pdf.setShowScrollbars(FALSE);
+=====隐藏工具栏
+m_pdf.setShowToolbar(FALSE);//默认是不显示的
+=====翻页
+m_pdf.gotoFirstPage();
+m_pdf.gotoLastPage();
+m_pdf.gotoPreviousPage();
+m_pdf.gotoNextPage();
+m_pdf.setCurrentPage(x);
+=====设置模式
+SetLayoutMode:DontCare、SinglePage、OneColumn、TwoColumnLeft、TwoColumnRight
+setPageMode:pages only, pages and thumbnails, or pages and bookmarks
+
+
+
+
+
+
+
+=================CAJAX control============
+需要安装CAJViewer7.2.exe
+该控件在VS下会因为几个函数名和已有的定义冲突发生编译错误，需要改变几个冲突的函数名
+======隐藏滚动条
+m_pdf.SetShowScrollBar(0);
+======打开
+m_pdf.Open(_T("d:\\test.pdf"));
+======屏蔽右键菜单
+m_pdf.SetEnablePopupMenu(FALSE);
+======设置背景颜色
+m_pdf.SetFacingNoFrameBKColor(RGB(0,100,100));\\xp系统下可用,win7下只有5模式时候才生效
+=====设置显示位置
+m_pdf.SetWindowPos(NULL, x, y,cx,cy, SWP_NOACTIVATE | SWP_NOZORDER); 
+======获取页数
+int pageCount=m_pdf.GetPageCount();
+======获取当前页码
+int cur=m_pdf.GetCurPage();
+======转到某页
+m_pdf.TurnToPage(x,0);
+======阅读模式
+m_pdf.SetPageBrowseType(1);
+1：单页    2：双页单张   3：双页多张   4：单页不支持滑动    5：带翻书效果 
+//2,3模式下，一次需要翻两页
+//5模式下，可以设置一开始跳到第二页，翻页从第2页开始
+//5模式下翻页（偶数翻一页，奇数翻两页）：x++;if(x%2)x++;
+======关闭
+m_pdf.Close();

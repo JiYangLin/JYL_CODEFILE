@@ -1,0 +1,6 @@
+#include "SendU.h"
+
+CSendU sendU;
+sendU.Send(_T(".\\a.txt"),_T(":\\xxx"),_T("a.txt"));
+
+//把当前目录下的a.txt发送到U盘中的xxx目录下，文件名为a.txt

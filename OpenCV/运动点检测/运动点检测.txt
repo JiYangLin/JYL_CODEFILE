@@ -1,0 +1,146 @@
+使用时
+先创建motion，和要检测的src一样大
+if( !motion )
+{
+	motion = cvCreateImage( cvSize(src->width,src->height), 8, 1 );
+	cvZero( motion );
+	motion->origin = src->origin;
+}
+
+
+update_mhi(src, motion, 120 );//获取motion图像
+	
+CvPoint center = {0};
+FindContour(motion,&center);//在motion获取运动点（center），此处可以对motion图像进行选取，只检测部分区域
+if (center.x == 0 && center.y == 0){}//表示没有运动点
+else//表示有运动点
+{
+   int x=center.x;
+   int y=center.y;//相对于motion这个区域的坐标点
+////////（线程）注意不能在此处调用UpdateData函数刷新mfc的控件数据，只能用SendMessage的方式让主线程刷新数据
+}
+
+
+
+
+
+
+
+
+
+////////////////////FindContour函数控制噪点影响
+将该函数的if (bndRect.width*bndRect.height < motion->width*motion->height)修改为：
+
+float area_ratio =0.3;
+if ((bndRect.width*bndRect.height < motion->width*motion->height)&&(bndRect.width*bndRect.height > area_ratio*motion->width*motion->height))
+
+
+可以将感应度降低或者提高，area_ratio为1的时候就不能检测到了
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////
+
+
+
+IplImage* motion=NULL;
+IplImage **buf = 0;
+int last = 0;
+IplImage *mhi = 0;
+const double MHI_DURATION = 0.5;
+const int N = 3;
+void  update_mhi( IplImage* img, IplImage* motion, int diff_threshold )
+{
+	double timestamp = clock()/100; // get current time in seconds
+	CvSize size = cvSize(img->width,img->height); 
+	int index1, index2;
+	IplImage* silh;
+	IplImage* pyr = cvCreateImage( cvSize((size.width)/2, (size.height)/2), 8, 1 );
+
+	if( !mhi || mhi->width != size.width || mhi->height != size.height ) 
+	{
+		if( buf == 0 ) 
+		{
+			buf = (IplImage**)malloc(N*sizeof(buf[0]));
+			memset( buf, 0, N*sizeof(buf[0]));
+		}
+
+		for( int i = 0; i < N; i++ ) 
+		{
+			cvReleaseImage( &buf[i] );
+			buf[i] = cvCreateImage( size, IPL_DEPTH_8U, 1 );
+			cvZero( buf[i] );
+		}
+		cvReleaseImage( &mhi );
+		mhi = cvCreateImage( size, IPL_DEPTH_32F, 1 );
+		cvZero( mhi );
+	} 
+
+	cvCvtColor( img, buf[last], CV_BGR2GRAY ); // convert frame to grayscale
+
+	index1 = last;
+	index2 = (last + 1) % N; // index of (last - (N-1))th frame 
+	last = index2;
+
+	// 做帧差
+	silh = buf[index2];
+	cvAbsDiff( buf[index1], buf[index2], silh ); // get difference between frames
+
+	// 对差图像做二值化
+	cvThreshold( silh, silh, 30, 255, CV_THRESH_BINARY ); // and threshold it
+
+	cvUpdateMotionHistory( silh, mhi, timestamp, MHI_DURATION ); // update MHI
+	cvCvtScale( mhi, motion, 255./MHI_DURATION, 
+		(MHI_DURATION - timestamp)*255./MHI_DURATION );    
+	cvCvtScale( mhi, motion, 255./MHI_DURATION, 0 );    
+
+	// 中值滤波，消除小的噪声
+	cvSmooth( motion, motion, CV_MEDIAN, 3, 0, 0, 0 );
+
+	// 向下采样，去掉噪声
+	cvPyrDown( motion, pyr, 7 );
+	cvDilate( pyr, pyr, 0, 1 );  // 做膨胀操作，消除目标的不连续空洞
+	cvPyrUp( pyr, motion, 7 );
+
+	cvReleaseImage( &pyr );
+}
+void FindContour(IplImage* motion, CvPoint *center)
+{
+	CvMemStorage *stor = cvCreateMemStorage(0);
+	CvSeq *cont = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint) , stor);
+	// 找到所有轮廓
+	int contourcount = cvFindContours( motion, stor, &cont, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
+	if(contourcount==0)
+	{
+		cvReleaseMemStorage(&stor);	
+		return;
+	}
+
+	CvRect bndRect = cvRect(0,0,0,0);
+	CvRect p_rect = cvRect(0,0,0,0);
+	double contourArea,maxcontArea=0;
+	CvSeq *contourPos;
+	for( ; cont != 0; cont = cont->h_next )//可以遍历找到的所有矩形轮廓
+	{
+		p_rect = cvBoundingRect( cont, 0 );
+		contourArea=p_rect.width*p_rect.height;
+		if(contourArea>=maxcontArea && contourArea < motion->width*motion->height)//提取最大轮廓
+		{
+			maxcontArea=contourArea;
+			contourPos=cont;
+		}
+	}
+	bndRect = cvBoundingRect(contourPos,0);
+	if (bndRect.width*bndRect.height < motion->width*motion->height)
+	{
+		center->x=(2*bndRect.x+bndRect.width)/2;
+		center->y=(2*bndRect.y+bndRect.height)/2;
+	}
+	cvReleaseMemStorage(&stor);
+}

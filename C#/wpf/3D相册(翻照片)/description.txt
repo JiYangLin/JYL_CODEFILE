@@ -1,0 +1,5 @@
+xmlns:local="clr-namespace:PHOTO3D"   【加入代码文件后先编译下，否则直接写这句会提示错误】
+ 
+<local:FlipTile3D></local:FlipTile3D>
+
+图片文件夹Picture

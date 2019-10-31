@@ -1,0 +1,80 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+using namespace std;
+
+//通过注册表枚举串口号。在USB转串口及虚拟串口的情况下，需多试几个厂家。
+void GetSerialPortsReg(vector<string> &PortVec)
+{
+	HKEY hKey;
+	LPCTSTR data_Set = _T("HARDWARE//DEVICEMAP//SERIALCOMM//");
+	long ret0 = (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, data_Set, 0, KEY_READ, &hKey));
+	if (ret0 != ERROR_SUCCESS)
+	{
+		return ;
+	}
+	int i = 0;
+	CHAR Name[25];
+	UCHAR szPortName[80];
+	LONG Status;
+	DWORD dwIndex = 0;
+	DWORD dwName;
+	DWORD dwSizeofPortName;
+	DWORD Type;
+	dwName = sizeof(Name);
+	dwSizeofPortName = sizeof(szPortName);
+	do
+	{
+		Status = RegEnumValueA(hKey, dwIndex++, Name, &dwName, NULL, &Type,
+			szPortName, &dwSizeofPortName);
+		if ((Status == ERROR_SUCCESS) || (Status == ERROR_MORE_DATA))
+		{
+		
+			string PortName = (char*)szPortName;
+			PortVec.push_back(PortName);
+		}
+	} while ((Status == ERROR_SUCCESS) || (Status == ERROR_MORE_DATA));
+	RegCloseKey(hKey);
+}
+
+
+//一个一个试的方式，避免USB转串口，或者虚拟串口等问题。但该方法用的时间比较长。
+void EnumerateSerialPorts(vector<string> &PortVec)
+{
+	//因为至多有255个串口，所以依次检查各串口是否存在
+	//如果能打开某一串口，或打开串口不成功，但返回的是 ERROR_ACCESS_DENIED错误信息，
+	//都认为串口存在，只不过后者表明串口已经被占用
+	//否则串口不存在
+	for (int i = 1; i<256; i++)
+	{
+		//Form the Raw device name
+		stringstream ss;
+		ss << "COM" << i;
+		string asPort = ss.str();
+		//Try to open the port
+		BOOL bSuccess = FALSE;
+		HANDLE hPort = ::CreateFileA(asPort.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+		if (hPort == INVALID_HANDLE_VALUE)
+		{
+			DWORD dwError = ::GetLastError();
+			if (dwError != 2) //串口存在，被占用 ERROR_ACCESS_DENIED
+			{
+				bSuccess = TRUE;
+			}
+		}
+		else    //串口可被打开
+		{
+			//The port was opened successfully
+			bSuccess = TRUE;
+			//Don't forget to close the port, since we are going to do nothing with it anyway
+			CloseHandle(hPort);
+		}
+		//Add the port number to the array which will be returned
+		if (bSuccess)   //所有存在的串口
+		{
+			PortVec.push_back(asPort);
+		}
+	}
+	return;
+}

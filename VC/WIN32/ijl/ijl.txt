@@ -1,0 +1,61 @@
+===============jpgTodib
+	JpgBufToDib m_JpgBufToDib;
+	if(!m_JpgBufToDib.TransToDibBuffer((BYTE*)pJpgBuf,fileLen)) return;
+	m_JpgBufToDib.Show(this);
+
+
+
+================dibTojpg
+
+	DibToJpg m_DibToJpg;
+	m_DibToJpg.Init(Width,Height,channel);
+
+	
+
+	m_DibToJpg.SaveToJPGBuffer(pDibData);
+
+
+	ofstream ofs("D:\\111111.jpg",ofstream::binary);
+	if (!ofs) return;
+	ofs.write(&m_DibToJpg.m_JpgBuf[0],m_DibToJpg.m_jpgBufSize);
+	ofs.close();
+
+
+        m_DibToJpg.DibSaveToJPGFile(pDibData,dibBufSize,"D:\\111111111.jpg");
+
+
+
+
+==dib
+	int channel = 3;
+	int Width = 305;
+	int Height = 300;
+
+	int widstep = Width * channel + (4 - Width*channel%4);
+	int dibBufSize = widstep*Height;
+	BYTE *pDibData = new BYTE[dibBufSize];
+
+	for (int row = 0; row <= 150; ++row)
+	{
+		for (int col = 0; col <= 150; ++col)
+		{
+			int preBitNum = widstep * row;
+
+			int pos = preBitNum + col * channel;
+			pDibData[pos++] = 0;    //B
+			pDibData[pos++] = 0;    //G
+			pDibData[pos++] = 255;  //R
+		}
+	}
+	for (int row = 150; row < Height; ++row)
+	{
+		for (int col = 150; col < Width; ++col)
+		{
+			int preBitNum = widstep  * row;
+
+			int pos = preBitNum + col * channel;
+			pDibData[pos++] = 0;    //B
+			pDibData[pos++] = 255;    //G
+			pDibData[pos++] = 255;  //R
+		}
+	}

@@ -1,0 +1,115 @@
+初始化时调用CreateFirstConnected(),设置好width和height。
+运行时，无限循环调用ProcessSkeleton()
+
+
+
+#include "NuiApi.h"
+#pragma comment(lib,"Kinect10.lib")
+INuiSensor*             m_pNuiSensor=NULL;
+HANDLE                  m_pSkeletonStreamHandle=INVALID_HANDLE_VALUE;
+HANDLE                  m_hNextSkeletonEvent=INVALID_HANDLE_VALUE;
+int width ;
+int height ;//客户区的宽高
+void CreateFirstConnected()
+{
+	INuiSensor * pNuiSensor;
+
+	int iSensorCount = 0;
+	HRESULT hr = NuiGetSensorCount(&iSensorCount);
+	if (FAILED(hr))
+	{
+		return ;
+	}
+	if(0==iSensorCount)
+	{
+		AfxMessageBox("未找到kinect设备");
+		exit(0);
+	}
+	// Look at each Kinect sensor
+	for (int i = 0; i < iSensorCount; ++i)
+	{
+		// Create the sensor so we can check status, if we can't create it, move on to the next
+		hr = NuiCreateSensorByIndex(i, &pNuiSensor);
+		if (FAILED(hr))
+		{
+			continue;
+		}
+
+		// Get the status of the sensor, and if connected, then we can initialize it
+		hr = pNuiSensor->NuiStatus();
+		if (S_OK == hr)
+		{
+			m_pNuiSensor = pNuiSensor;
+			break;
+		}
+
+		// This sensor wasn't OK, so release it since we're not using it
+		pNuiSensor->Release();
+	}
+
+	if (NULL != m_pNuiSensor)
+	{
+		// Initialize the Kinect and specify that we'll be using skeleton
+		hr = m_pNuiSensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_SKELETON); 
+		if (SUCCEEDED(hr))
+		{
+			// Create an event that will be signaled when skeleton data is available
+			m_hNextSkeletonEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+			// Open a skeleton stream to receive skeleton data
+			hr = m_pNuiSensor->NuiSkeletonTrackingEnable(m_hNextSkeletonEvent, 0); 
+		}
+	}
+
+	if (NULL == m_pNuiSensor || FAILED(hr))
+	{
+		return ;
+	}
+
+	return ;
+}
+void ProcessSkeleton()
+{
+	if (NULL == m_pNuiSensor)
+	{
+		return;
+	}
+
+	if ( WAIT_OBJECT_0 == WaitForSingleObject(m_hNextSkeletonEvent, 0) )
+	{
+		NUI_SKELETON_FRAME skeletonFrame = {0};
+
+		HRESULT hr = m_pNuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame);
+		if ( FAILED(hr) )
+		{
+			return;
+		}
+		// smooth out the skeleton data
+		m_pNuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
+
+		for (int i = 0 ; i < NUI_SKELETON_COUNT; ++i)
+		{
+			NUI_SKELETON_TRACKING_STATE trackingState = skeletonFrame.SkeletonData[i].eTrackingState;
+			LONG x, y;
+			USHORT depth;
+
+			NuiTransformSkeletonToDepthImage(skeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HAND_RIGHT],&x,&y,&depth);
+			//returns coordinates in NUI_IMAGE_RESOLUTION_320x240 space
+			//SkeletonPositions中存放20个数据，分别对应身体的不同关节部位
+
+			x=width*x/240;
+			y=height*y/320;
+			
+
+			if (NUI_SKELETON_TRACKED == trackingState)
+			{ //tracking the skeleton
+				 SetCursorPos(x,y);
+			}
+			else if (NUI_SKELETON_POSITION_ONLY == trackingState)
+			{//only received the center point of the skeleton
+				SetCursorPos(x,y);
+			}
+
+		}
+	}
+}

@@ -1,0 +1,37 @@
+使用ShockWave Flash Object控件
+
+#include "shockwaveflash.h"
+绑定变量
+CShockwaveFlash	m_flash;
+DDX_Control(pDX, IDC_SHOCKWAVEFLASH1, m_flash);
+
+
+全屏播放当前目录下的x.swf文件
+ShowWindow(SW_SHOWMAXIMIZED);
+	
+int cx=GetSystemMetrics(SM_CXSCREEN); 
+int cy=GetSystemMetrics(SM_CYSCREEN); 
+	
+CString strFlashPath; 
+GetCurrentDirectory(1024,strFlashPath.GetBuffer(1024));
+strFlashPath.ReleaseBuffer();
+
+strFlashPath += _T("\\x.swf"); //不能使用相对路径
+
+m_flash.SetWindowPos(NULL,0,0,cx,cy,0);
+m_flash.LoadMovie(0,strFlashFile);
+//m_flash.SetLoop(TRUE);
+m_flash.Play();
+
+播放控制，preTranslateMessage中，按以下键盘停止，再次按下继续播放
+static int i=1;
+if(pMsg->message==WM_KEYDOWN){
+   if(1==i){
+	m_flash.StopPlay();
+	i=0;
+   }
+   else{
+	m_flash.Play();
+	i=1;
+   }
+}

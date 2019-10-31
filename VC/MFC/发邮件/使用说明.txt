@@ -1,0 +1,8 @@
+#include "SendEmail.h"
+
+CSendEmail send;
+send.Send();
+
+
+//////////发件内容定义
+CSendEmail::SendMailThread函数中修改相关内容

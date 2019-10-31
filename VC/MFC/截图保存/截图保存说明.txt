@@ -1,0 +1,25 @@
+将选择区域截图并保存为BMP格式图片到指定路径
+
+选择区域必须是一个窗体对象，可以是对话框，也可以是对话框上面的控件。
+传入的第一个参数就是对象窗体的m_hWnd，截图时，就是以该窗体的左上角为基准的。
+传入前可以改变rect.righ和rect.bottom,相当于以左上角为基准，截图到右下角某处
+
+
+使用时：
+#include "SaveBmp.h"
+
+截取对话框全部客户区//如果改变rect.righ和rect.bottom可以截取客户区左上角到指定区域的范围
+CRect rect;
+GetClientRect(rect);
+CSaveBmp save;
+save.DlgSavebmp(m_hWnd,rect);  //使用另存为对话框
+save.SaveBmp(GetDlgItem(IDC_STATIC_PIC)->m_hWnd,rect,"d:\\x.jpg");//直接指定路径
+
+
+
+用对话框上面的控件，截取对话框部分客户区内容
+CRect rect;
+GetDlgItem(IDC_STATIC)->GetClientRect(rect);
+CSaveBmp save;
+save.DlgSavebmp(GetDlgItem(IDC_STATIC)->m_hWnd,rect);
+

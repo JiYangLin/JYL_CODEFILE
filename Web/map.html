@@ -1,0 +1,78 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <title>地图显示</title>
+    <style>
+        html,
+        body,
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <script src="https://webapi.amap.com/maps?v=1.4.10&key=af3457f8988ed8fd336aea62906b9dc3"></script>
+    <script>
+	    function markerClickFun(ev) {
+          var target = ev.target;
+		  console.log(target.Ke.title);
+        }
+	
+        var map = new AMap.Map('container', {
+            resizeEnable: true, //是否监控地图容器尺寸变化
+            zoom: 11, //初始化地图层级
+            center: [116.397428, 39.90923] //初始化地图中心点
+        });
+        var icon = new AMap.Icon({
+            //image: 'img/1.png', 
+            size: new AMap.Size(40, 40)
+        });
+        var marker = new AMap.Marker({
+            icon: icon,
+            position: [116.000923, 39.675807], //点标记在地图上显示的位置，默认为地图中心点
+            offset: new AMap.Pixel(-16, -45),//位置偏移量，默认值为 Pixel(-10，-34), (0, 0)时 marker 左上角对准 position 的位置
+            title: "xx", //鼠标滑过标记时的文字提示
+            map: map, //要显示该 Marker 的地图对象
+			diy:"aaa"
+        });
+		marker.on('click', markerClickFun);
+		
+        marker =new AMap.Marker({
+            icon: icon,
+            position: [116.011933, 39.675807],
+            offset: new AMap.Pixel(-16, -45),
+            title: "yy",
+            map: map
+        });
+		marker.on('click', markerClickFun);
+		
+		map.setFitView();
+		
+	
+		
+    </script>
+</body>
+</html>
+
+
+
+
+
+<!-- =====根据IP获取gps
+https://restapi.amap.com/v3/ip?output=xml&key=e6333f1159c46468b26c90d0cadc1a18
+返回值：
+<response>
+<status>1</status>
+<info>OK</info>
+<infocode>10000</infocode>
+<province>北京市</province>
+<city>北京市</city>
+<adcode>110000</adcode>
+<rectangle>116.0119343,39.66127144;116.7829835,40.2164962</rectangle>
+</response> -->

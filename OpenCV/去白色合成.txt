@@ -1,0 +1,45 @@
+void getimage(IplImage* bgr,int i,int j,int &b,int &g,int &r){
+	b= ((uchar *)(bgr->imageData+bgr->widthStep*j))[i*3];
+	g= ((uchar *)(bgr->imageData+bgr->widthStep*j))[i*3+1];
+	r= ((uchar *)(bgr->imageData+bgr->widthStep*j))[i*3+2];
+}
+void setimage(IplImage* im,int i,int j,int b,int g,int r)
+{
+	((uchar *)(im->imageData+im->widthStep*j))[i*3]  =b;
+	((uchar *)(im->imageData+im->widthStep*j))[i*3+1]=g;
+	((uchar *)(im->imageData+im->widthStep*j))[i*3+2]=r;
+}
+void CPHDlg::MulBlend(IplImage* image,IplImage* morph_image, CvRect rect)
+{
+	IplImage* subimage = cvCreateImage(cvSize(rect.width,rect.height),image->depth,image->nChannels);
+	IplImage* nMask = cvCreateImage(cvSize(rect.width,rect.height),morph_image->depth,morph_image->nChannels);
+	cvResize(morph_image,nMask,CV_INTER_LINEAR);
+	
+	cvSetImageROI(image,rect);
+	cvCopy(image,subimage);
+	
+	for (int y = 0; y < rect.height; y++)
+	{
+		for (int x = 0; x < rect.width; x++)
+		{
+			int b1,g1,r1,b2,g2,r2;
+			getimage(nMask,x,y,b1,g1,r1);
+			getimage(subimage,x,y,b2,g2,r2);
+			b2 = b1*b2/255;
+			g2 = g1*g2/255;
+			r2 = r1*r2/255;
+			setimage(subimage,x,y,b2,g2,r2);
+		}
+	}
+	cvCopy(subimage,image);
+	cvResetImageROI(image);
+	
+	cvReleaseImage(&subimage);
+	cvReleaseImage(&nMask);
+}
+
+//////////////////////////使用/////////////////////////////
+将带白色底的prev图像放到back上面
+IplImage* prev = cvLoadImage(".\\resource\\prev.jpg");
+MulBlend(back,prev,cvRect(x,y,width,height));
+cvReleaseImage(&prev);

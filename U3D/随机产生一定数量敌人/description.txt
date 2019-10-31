@@ -1,0 +1,11 @@
+obj.tag = Tag可以为指定的物体设置标签属性（需要进行增加标签的设置），也可以在视图中设置物体的标签属性。
+FindGameObjectsWithTag(Tag)函数可以得到一个GameObject数组，该数组的成员是所有包含Tag标签的物体。
+
+增加标签：
+使用标签需要在Inspector视图中编辑标签。任意选一个物体，在Inspector视图中物体属性最上面都包含Tag属性（该属性是共有的），点击箭头选择Add Tag，在其中加入：
+Element0设置为Enemy(代码汇中使用的是这个标签)
+
+
+
+将代码放置在任意物体上，视图中需要设置Objectman数组的元素，可以在其中加入一个或多个物体。
+程序会每隔timeSpawn秒随机在半径radius范围内复制物体，直到物体数量达到enemyCount（如果复制的物体被销毁，会继续产生，数量达到enemyCount）

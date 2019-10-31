@@ -1,0 +1,14 @@
+C:\Program Files\Microsoft SDKs\Kinect\v1.8中可以找到lib和.h，不需要在工程中放dll
+使用时如果头文件在当前目录，将NuiApi.h中的
+#include <NuiSensor.h>
+#include <NuiImageCamera.h>
+#include <NuiSkeleton.h>
+进行修改
+
+
+
+面对Kinect，从左往右看。最左边是红外光源，其次是LED指示灯，再次是彩色摄像头，用来收集RGB数据，最右边是红外摄像头采集景深数据。
+在感应器的下方是麦克风阵列，他包括四个不同的麦克风，一个在左边的红外发射器下面，另外3个在右边景深摄像头下面。
+
+
+

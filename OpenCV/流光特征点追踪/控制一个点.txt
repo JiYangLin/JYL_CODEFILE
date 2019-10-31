@@ -1,0 +1,112 @@
+************************************************
+使用时需要将frame的图像调整到需要的大小，否则会出现坐标误差
+************************************************
+
+
+IplImage *image = 0, *grey = 0, *prev_grey = 0, *pyramid = 0, *prev_pyramid = 0, *swap_temp;
+int win_size = 10;
+const int MAX_COUNT = 1;
+CvPoint2D32f* points[2] = {0,0}, *swap_points;//两个point指针，分别指向max_count个连续的内存空间
+char* status = 0;
+int count = 0;
+int need_to_init = 0;
+int night_mode = 0;
+int flags = 0;
+CvPoint pt=cvPoint(100,100);//起始点,当前点
+
+
+while(1)
+	{
+		frame=cvQueryFrame(capture);
+		if(!frame)
+		{
+			cvSetCaptureProperty(capture,CV_CAP_PROP_POS_FRAMES ,0);
+			cvGrabFrame(capture );
+			frame=cvRetrieveFrame(capture);
+		}
+		IplImage* dst = cvCreateImage(cvSize(cx,cy),frame->depth,frame->nChannels);
+        cvResize(frame,dst);
+
+
+		if( !image )//一开始的时候image是空的，该if内的初始化只在开始时候运行一次
+		{
+			image = cvCreateImage( cvGetSize(dst), 8, 3 );
+			image->origin = frame->origin;
+			grey = cvCreateImage( cvGetSize(dst), 8, 1 );
+			prev_grey = cvCreateImage( cvGetSize(dst), 8, 1 );
+			pyramid = cvCreateImage( cvGetSize(dst), 8, 1 );
+			prev_pyramid = cvCreateImage( cvGetSize(dst), 8, 1 );
+			//为两个point指针分别分配500个点的空间
+			points[0] = (CvPoint2D32f*)cvAlloc(MAX_COUNT*sizeof(points[0][0]));
+			points[1] = (CvPoint2D32f*)cvAlloc(MAX_COUNT*sizeof(points[0][0]));
+			status = (char*)cvAlloc(MAX_COUNT);
+			flags = 0;
+		}
+		cvCopy( dst, image, 0 );
+		cvCvtColor( image, grey, CV_BGR2GRAY );
+
+
+		if( count > 0 )
+		{
+			cvCalcOpticalFlowPyrLK( prev_grey, grey, prev_pyramid, pyramid,
+				points[0], points[1], count, cvSize(win_size,win_size), 3, status, 0,
+				cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.03), flags );
+			flags |= CV_LKFLOW_PYR_A_READY;
+
+			int i, k;
+			for( i = k = 0; i < count; i++ )
+			{	
+	    	   if( !status[i] )
+				{
+					continue;
+				}
+			    points[1][k++] = points[1][i];
+
+				//将点的范围进行限制
+				BOOL b_change=FALSE;
+				if(points[1][i].x<100)
+				{
+					points[1][i].x=100;
+					b_change=TRUE;
+				}
+				if(points[1][i].x>cx-100)
+				{
+					points[1][i].x=cx-100;
+					b_change=TRUE;
+				} 
+				if(points[1][i].y<100)
+				{
+					points[1][i].y=100;
+					b_change=TRUE;
+				}
+				if(points[1][i].y>cy-100)
+				{
+					points[1][i].y=cy-100;
+					b_change=TRUE;
+				}
+				if(b_change)
+				{
+					k--;
+				}
+				pt.x=points[1][i].x;
+				pt.y=points[1][i].y;
+				cvCircle( image, pt, 10, CV_RGB(0,255,0), -1, 8,0);
+			}
+			count=k;
+		}
+
+		pdlg->DrawPicToHdc(image ,IDC_STATIC_PIC);
+		
+		if( count < MAX_COUNT )//增加点
+		{
+			points[1][count++] = cvPointTo32f(pt);
+			cvFindCornerSubPix( grey, points[1] + count - 1, 1,cvSize(win_size,win_size), cvSize(-1,-1),cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.03));
+		}
+
+		CV_SWAP( prev_grey, grey, swap_temp );
+		CV_SWAP( prev_pyramid, pyramid, swap_temp );
+		CV_SWAP( points[0], points[1], swap_points );
+
+		cvReleaseImage(&dst);
+		Sleep(33); 
+	}

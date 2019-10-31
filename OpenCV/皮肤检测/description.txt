@@ -1,0 +1,74 @@
+//////////////使用
+Color(img);  
+直接将img进行处理后得到结果
+
+
+typedef struct data
+{
+	unsigned char H;
+	unsigned char S;
+	unsigned char V;
+}DATA;
+void Color(IplImage *img)
+{/////H色调 S饱和度  V亮度
+	int i,j;
+	IplImage *img_hsv = cvCreateImage(cvGetSize(img),8,3);
+	cvCvtColor(img,img_hsv,CV_BGR2HSV);
+
+	///////创建HSV数据数组
+	DATA **bmpdata;
+	bmpdata = new DATA*[img->height];
+	for(i=0;i<img->height;i++)
+	{
+		bmpdata[i] = new DATA[img->width];
+	}
+	//从img_hsv获取HSV数据放到bmpdata中
+	for(i=0;i<img->height;i++)
+	{
+		for(j=0;j<img->width;j++)
+		{
+			bmpdata[i][j].H=((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3];
+			bmpdata[i][j].S=((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3+1] ;
+			bmpdata[i][j].V=((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3+2];
+		}
+	}
+    /////////////对数据进行处理
+	for (i=0;i<img->height;i++)
+	{
+		for (j=0;j<img->width;j++)
+		{ 
+			if(bmpdata[i][j].H<=30 && bmpdata[i][j].S>=5)
+			{
+				bmpdata[i][j].H+=0;  ///////////改变皮肤的色相0-180//////////
+			}
+			else/////////改变皮肤以外地方/////////
+			{
+				bmpdata[i][j].H=0;
+				bmpdata[i][j].S=0;
+				bmpdata[i][j].V=0;
+			}
+		}
+	}
+
+	/////////////将改变后的数据赋值到img_hsv
+	for (i=0;i<img->height;i++)
+	{
+		for (j=0;j<img->width;j++)
+		{   
+			((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3]=bmpdata[i][j].H;
+			((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3+1]=bmpdata[i][j].S;
+			((uchar*)(img_hsv->imageData + img_hsv->widthStep*i))[j*3+2]=bmpdata[i][j].V;
+		}
+	}
+
+	
+	cvCvtColor(img_hsv,img,CV_HSV2BGR);
+	cvErode(img,img,NULL,1);
+	cvDilate(img,img,NULL,1);
+	for(i=0;i<img->height;i++)
+	{
+		delete(bmpdata[i]);
+	}
+	delete(bmpdata);
+	cvReleaseImage( &img_hsv);
+}

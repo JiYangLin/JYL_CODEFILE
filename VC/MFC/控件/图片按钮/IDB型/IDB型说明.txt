@@ -1,0 +1,10 @@
+#include "BitButtonNL.h"
+
+将按钮变量绑定的类型改变
+CBitButtonNL 	m_btn;
+
+在OnInitDialog时可以设置
+m_btn.SetBitmaps(IDB_BITMAP1,IDB_BITMAP2,IDB_BITMAP3); 
+//点击时显示IDB_BITMAP2
+
+m_btn.SetToolTipText("按钮名");
