@@ -1,0 +1,10 @@
+AssemblyInfo.cs文件中：
+[assembly: log4net.Config.XmlConfigurator(Watch = true, ConfigFile = "log4net.config")]
+
+static log4net.ILog logger = log4net.LogManager.GetLogger("loggerName");
+
+logger.Debug("调试");
+logger.Info("消息");
+logger.Warn("警告");
+logger.Error("异常");
+logger.Fatal("错误");

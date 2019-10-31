@@ -1,0 +1,124 @@
+Loaded="UserControl_Loaded"
+Unloaded="UserControl_Unloaded"
+<Grid x:Name="data3D"></Grid>
+
+
+using nzy3D.Chart;
+using nzy3D.Colors;
+using nzy3D.Colors.ColorMaps;
+using nzy3D.Maths;
+using nzy3D.Plot3D.Builder;
+using nzy3D.Plot3D.Primitives.Axes.Layout;
+using nzy3D.Plot3D.Rendering.Canvas;
+using nzy3D.Plot3D.Rendering.View;
+
+
+
+       private nzy3D.Chart.Controllers.Thread.Camera.CameraThreadController t;
+        private IAxeLayout axeLayout;
+        Renderer3D m_renderer = null;
+        Chart m_chart = null;
+        nzy3D.Plot3D.Primitives.Shape m_surface = null;
+        nzy3D.Chart.Controllers.Mouse.Camera.CameraMouseController m_mouse = null;
+
+        public Model3dPage()
+        {
+            InitializeComponent();
+        }
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            m_renderer = new Renderer3D();
+            m_chart = new Chart(m_renderer, Quality.Nicest);
+
+            System.Windows.Forms.Integration.WindowsFormsHost host =
+                new System.Windows.Forms.Integration.WindowsFormsHost();
+            host.Child = m_renderer;
+
+            this.data3D.Children.Add(host);
+
+            m_mouse = new nzy3D.Chart.Controllers.Mouse.Camera.CameraMouseController();
+            m_mouse.addControllerEventListener(m_renderer);
+            m_chart.addController(m_mouse);
+
+
+            this.DataContext = this;
+
+            List<Coord3d> data = new List<Coord3d>();
+            data.Add(new Coord3d(-4.000000, -4.000000, -0.586176));
+            data.Add(new Coord3d(-2.000000, -4.000000, -0.971278));
+            data.Add(new Coord3d(0.000000, -4.000000, -0.756803));
+            data.Add(new Coord3d(2.000000, -4.000000, -0.971278));
+            data.Add(new Coord3d(-4.000000, -2.000000, -0.971278));
+            data.Add(new Coord3d(-2.000000, -2.000000, 0.308072));
+            data.Add(new Coord3d(0.000000, -2.000000, 0.909297));
+            data.Add(new Coord3d(2.000000, -2.000000, 0.308072));
+            Show(data);
+        }
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DisposeBackgroundThread();
+        }
+
+
+
+        public void Show3D(int imgWidth, int imgheight, int widthStep, byte[] imgZArry)
+        {
+            if (null != m_surface) m_chart.Scene.Graph.Remove(m_surface, true);
+            m_chart.Clear();
+
+            int widthStepShow = imgWidth / 50;
+            int heightStepShow = imgheight / 50;
+            int rowThr = 0;
+
+            List<Coord3d> data = new List<Coord3d>();
+            for (int row = 0; row < imgheight; ++row)
+            {
+                if (row == rowThr)
+                {
+                    rowThr = row + heightStepShow;
+                    for (int col = 0; col < imgWidth; col += widthStepShow)
+                    {
+                        int pos = row * widthStep + col * _3DPage.perPixSize;
+                        float val = BitConverter.ToSingle(imgZArry, pos);
+                        data.Add(new Coord3d(col, row, val));
+                    }
+                }
+            }
+
+            Show(data);
+        }
+        public void DisposeBackgroundThread()
+        {
+            if ((t != null))
+            {
+                t.Dispose();
+            }
+        }
+
+
+        void Show(List<Coord3d> data)
+        {
+            m_surface = Builder.buildDelaunay(data);
+            m_surface.ColorMapper = new ColorMapper(new ColorMapRainbow(), m_surface.Bounds.zmin, m_surface.Bounds.zmax, new nzy3D.Colors.Color(1, 1, 1, 0.8));
+            m_surface.FaceDisplayed = true;
+            m_surface.WireframeDisplayed = true;
+            m_surface.WireframeColor = nzy3D.Colors.Color.CYAN;
+            m_surface.WireframeColor.mul(new nzy3D.Colors.Color(1, 1, 1, 0.5));
+
+            m_chart.Scene.Graph.Add(m_surface);
+            axeLayout = m_chart.AxeLayout;
+
+            DisposeBackgroundThread();
+
+            m_renderer.setView(m_chart.View);
+        }
+
+        void AutoRotate()
+        {
+            DisposeBackgroundThread();
+            t = new nzy3D.Chart.Controllers.Thread.Camera.CameraThreadController();
+            t.addControllerEventListener(m_renderer);
+            m_mouse.addSlaveThreadController(t);
+            m_chart.addController(t);
+            t.Start();
+        }
