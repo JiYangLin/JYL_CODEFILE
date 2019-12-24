@@ -1,0 +1,85 @@
+    <com.example.panellistlibrary.PanelListLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/id_pl_root">
+
+        <ListView
+            android:id="@+id/id_lv_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fastScrollEnabled="false"
+            android:overScrollMode="never"/>
+
+    </com.example.panellistlibrary.PanelListLayout>
+
+
+
+public class MainActivity extends AppCompatActivity {
+
+    private PanelListLayout pl_root;
+    private ListView lv_content;
+
+    private AbstractPanelListAdapter adapter;
+    private List<List<String>> contentList = new ArrayList<>();
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        pl_root = findViewById(R.id.id_pl_root);
+        lv_content = findViewById(R.id.id_lv_content);
+
+        //表头
+        String[] headArray = {"A列","B列","C列","D列","E列","F列","G列"};
+        List<String> rowHeadList  = new ArrayList<>(Arrays.asList(headArray));
+
+        //每个item宽度
+        Integer[] widthArray = {50,200,100,100,100,100,100};
+        List<Integer> itemWidthList = new ArrayList<>(Arrays.asList(widthArray));
+
+
+        //数据
+        String[] dataArray = {"1","2","2","2","2","2","2"};
+        List<String> data = new ArrayList<>(Arrays.asList(dataArray));
+        for(int i = 0 ; i < 50;++i) contentList.add(data);
+
+
+
+        adapter = new AbstractPanelListAdapter(this, pl_root, lv_content) {
+            @Override
+            protected BaseAdapter getContentAdapter() {
+                return null;
+            }
+        };
+        adapter.setInitPosition(10);
+        adapter.setSwipeRefreshEnabled(true);
+        //必填
+        adapter.setRowDataList(rowHeadList);
+        adapter.setContentDataList(contentList);
+        adapter.setItemWidthList(itemWidthList);
+        //选填
+        adapter.setTitle("编号");
+        adapter.setOnRefreshListener(new CustomRefreshListener());
+        adapter.setItemHeight(40);
+        pl_root.setAdapter(adapter);
+
+
+        //   修改contentList后调用
+        //   adapter.notifyDataSetChanged();
+
+    }
+
+
+    public class CustomRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+        @Override
+        public void onRefresh() {
+            //Toast.makeText(MainActivity.this, "custom SwipeRefresh listener", Toast.LENGTH_SHORT).show();
+            adapter.getSwipeRefreshLayout().setRefreshing(false);
+        }
+    }
+
+
+}
