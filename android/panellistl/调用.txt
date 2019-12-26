@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         adapter.setItemHeight(40);
         pl_root.setAdapter(adapter);
 
+        //跳转到指定行
+        adapter.setInitPosition(21);
 
         //   修改contentList后调用
         //   adapter.notifyDataSetChanged();
