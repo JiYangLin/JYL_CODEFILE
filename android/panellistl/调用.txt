@@ -66,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         adapter.setItemHeight(40);
         pl_root.setAdapter(adapter);
 
+        lv_content.setOnItemClickListener((parent, view, position, id) ->{
+                Integer row = position;
+                Toast.makeText(this,  row.toString() , Toast.LENGTH_SHORT).show();
+        });
 
         //   修改contentList后调用
         //   adapter.notifyDataSetChanged();
