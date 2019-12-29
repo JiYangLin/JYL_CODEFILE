@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this,  row.toString() , Toast.LENGTH_SHORT).show();
         });
 
-        //跳转到指定行
-        adapter.setInitPosition(21);
+        //跳转到末尾
+         //lv_content.setSelection(lv_content.getBottom());
 
         //   修改contentList后调用
         //   adapter.notifyDataSetChanged();
