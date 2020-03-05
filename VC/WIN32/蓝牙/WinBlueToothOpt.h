@@ -139,7 +139,7 @@ public:
 			const int bufSize = 100;
 			char recvBuf[bufSize ] = {0};
 			int rev = recv(sockConn,recvBuf,bufSize ,0);
-			if (rev <= 0)
+			if (rev <= 0)//！！蓝牙的socket断开连接不是返回-1，是0
 			{
 				 Rev( socketTcp);
 				return;
