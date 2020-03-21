@@ -6,7 +6,12 @@
 #include <queue>
 #include <map>
 using namespace std;
-#define  SerialPort_REV_MAX  2048
+enum
+{
+	SerialPort_REV_MAX = 2048,
+	MaxCheckBufLen =   1024*1000,
+};
+
 
 class IProcRevDat
 {
@@ -94,6 +99,8 @@ private:
 	vector<BYTE> checkDat;
 	void ProcBEContent(BYTE *dat,UINT BytesInQue)
 	{
+		if (checkDat.size() >= MaxCheckBufLen) checkDat.clear();
+
 		for (UINT i = 0 ; i < BytesInQue;++i)
 		{
 			BYTE *pVal = dat + i;
@@ -171,7 +178,7 @@ public:
 		return true;
 	}
 private:
-	bool Init(UINT  portNo = 1, UINT  baud = CBR_9600, char  parity = 'N', UINT  databits = 8, UINT  stopsbits = 1, DWORD dwCommEvents = EV_RXCHAR)
+	bool Init(UINT  portNo, UINT  baud)
 	{
 		if (!openPort(portNo))  return false;
 
@@ -184,12 +191,27 @@ private:
 		CommTimeouts.WriteTotalTimeoutConstant   = 0;
 		if(!SetCommTimeouts(m_hComm, &CommTimeouts)) return false;
 
-
-		char szDCBparam[50];
-		sprintf_s(szDCBparam, "baud=%d parity=%c data=%d stop=%d", baud, parity, databits, stopsbits);
 		DCB  dcb;
-		if(!GetCommState(m_hComm, &dcb) || !BuildCommDCBA(szDCBparam, &dcb)) return false;
-		dcb.fRtsControl = RTS_CONTROL_ENABLE;
+		if(!GetCommState(m_hComm, &dcb)) return false;
+		dcb.BaudRate = baud;
+		dcb.ByteSize = 8;
+		dcb.fParity = 0;//ÊÇ·ñÆæÅ¼Ð£Ñé
+		dcb.Parity = 0;
+		dcb.StopBits = 0;//1bit
+
+		/////////cts/rtc
+		//dcb.fOutxCtsFlow = 1;
+		//dcb.fOutxDsrFlow = 0;
+		//dcb.fRtsControl = RTS_CONTROL_HANDSHAKE;
+		//dcb.fOutX = 0;
+		//dcb.fInX = 0;
+		//////////
+
+
+		//char szDCBparam[50];
+		//sprintf_s(szDCBparam, "baud=%d", baud);
+		//if(!BuildCommDCBA(szDCBparam, &dcb)) return false;
+		 
 
 		if(!SetCommState(m_hComm, &dcb)) return false;
 
@@ -261,8 +283,9 @@ private:
 	bool openPort(UINT  portNo)
 	{
 		char szPort[50];
-		sprintf_s(szPort, "COM%d", portNo);
-
+		if (portNo <= 10) sprintf_s(szPort, "COM%d", portNo); 
+		else sprintf_s(szPort, "\\\\.\\COM%d", portNo);
+		
 		m_hComm = CreateFileA(szPort, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, 0);
 
 		return m_hComm != INVALID_HANDLE_VALUE;
