@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="UCP.DrawPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" >
+    <Grid >
+        <Image Name="imgMeasure"/>
+        <InkCanvas  Name="inkCanvasMeasure" EditingMode="None" Background="Transparent" Strokes="{Binding InkStrokes, Mode=TwoWay}"  HorizontalAlignment="Center" 
+                   Width="{Binding ElementName=imgMeasure, Path=ActualWidth}" Height="{Binding ElementName=imgMeasure, Path=ActualHeight}"
+                   SizeChanged="inkCanvasMeasure_SizeChanged"
+                   MouseMove="inkCanvasMeasure_MouseMove" MouseLeftButtonDown="inkCanvasMeasure_MouseLeftButtonDown" MouseLeftButtonUp="inkCanvasMeasure_MouseLeftButtonUp">
+        </InkCanvas>
+    </Grid>
+</UserControl>
